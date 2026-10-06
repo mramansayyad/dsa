@@ -1,0 +1,1518 @@
+#include <iostream>
+#include <stack>
+#include <string>
+#include <cctype>
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <cmath>
+using namespace std;
+
+// ============================================================
+// PRACTICAL NO. 1: Stack and Its Operations
+// ============================================================
+#define MAX 100
+
+class StackP1 {
+    int arr[MAX];
+    int top;
+
+public:
+    StackP1() { top = -1; }
+
+    bool isFull() { return top == MAX - 1; }
+    bool isEmpty() { return top == -1; }
+
+    void push(int val) {
+        if (isFull()) {
+            cout << "Stack Overflow!\n";
+            return;
+        }
+        arr[++top] = val;
+        cout << val << " pushed onto stack.\n";
+    }
+
+    void pop() {
+        if (isEmpty()) {
+            cout << "Stack Underflow!\n";
+            return;
+        }
+        cout << arr[top--] << " popped from stack.\n";
+    }
+
+    void peek() {
+        if (isEmpty()) {
+            cout << "Stack is empty.\n";
+            return;
+        }
+        cout << "Top element: " << arr[top] << "\n";
+    }
+
+    void traverse() {
+        if (isEmpty()) {
+            cout << "Stack is empty.\n";
+            return;
+        }
+
+        cout << "Stack (top to bottom): ";
+        for (int i = top; i >= 0; i--)
+            cout << arr[i] << " ";
+        cout << "\n";
+    }
+
+    void search(int val) {
+        for (int i = top; i >= 0; i--) {
+            if (arr[i] == val) {
+                cout << val << " found at position "
+                     << (top - i + 1) << " from top.\n";
+                return;
+            }
+        }
+        cout << val << " not found in stack.\n";
+    }
+};
+
+void practical1() {
+    StackP1 s;
+    int choice, val;
+
+    do {
+        cout << "\n--- Stack Menu ---\n";
+        cout << "1.Push 2.Pop 3.Peek 4.Traverse 5.Search 0.Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Enter value: ";
+                cin >> val;
+                s.push(val);
+                break;
+            case 2:
+                s.pop();
+                break;
+            case 3:
+                s.peek();
+                break;
+            case 4:
+                s.traverse();
+                break;
+            case 5:
+                cout << "Enter value to search: ";
+                cin >> val;
+                s.search(val);
+                break;
+        }
+    } while (choice != 0);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 2: Infix to Postfix Expression Conversion
+// ============================================================
+int precedenceP2(char op) {
+    if (op == '^') return 3;
+    if (op == '*' || op == '/') return 2;
+    if (op == '+' || op == '-') return 1;
+    return 0;
+}
+
+bool isOperandP2(char c) {
+    return isalnum(static_cast<unsigned char>(c));
+}
+
+string infixToPostfixP2(string expr) {
+    stack<char> st;
+    string result = "";
+
+    for (char c : expr) {
+        if (isOperandP2(c)) {
+            result += c;
+        }
+        else if (c == '(') {
+            st.push(c);
+        }
+        else if (c == ')') {
+            while (!st.empty() && st.top() != '(') {
+                result += st.top();
+                st.pop();
+            }
+            if (!st.empty())
+                st.pop();
+        }
+        else {
+            while (!st.empty() &&
+                   precedenceP2(st.top()) >= precedenceP2(c)) {
+                result += st.top();
+                st.pop();
+            }
+            st.push(c);
+        }
+    }
+
+    while (!st.empty()) {
+        result += st.top();
+        st.pop();
+    }
+
+    return result;
+}
+
+void practical2() {
+    string expr;
+
+    cout << "Enter infix expression: ";
+    cin >> expr;
+
+    cout << "Postfix: " << infixToPostfixP2(expr) << endl;
+}
+
+
+// ============================================================
+// PRACTICAL NO. 3: Postfix Expression Evaluation using Stack
+// ============================================================
+int evaluatePostfixP3(string expr) {
+    stack<int> st;
+
+    for (char c : expr) {
+        if (isdigit(static_cast<unsigned char>(c))) {
+            st.push(c - '0');
+        }
+        else {
+            int b = st.top();
+            st.pop();
+
+            int a = st.top();
+            st.pop();
+
+            switch (c) {
+                case '+':
+                    st.push(a + b);
+                    break;
+                case '-':
+                    st.push(a - b);
+                    break;
+                case '*':
+                    st.push(a * b);
+                    break;
+                case '/':
+                    st.push(a / b);
+                    break;
+                case '^': {
+                    int res = 1;
+                    for (int i = 0; i < b; i++)
+                        res *= a;
+                    st.push(res);
+                    break;
+                }
+            }
+        }
+    }
+
+    return st.top();
+}
+
+void practical3() {
+    string expr;
+
+    cout << "Enter postfix expression: ";
+    cin >> expr;
+
+    cout << "Result: " << evaluatePostfixP3(expr) << endl;
+}
+
+
+// ============================================================
+// PRACTICAL NO. 4: Towers of Hanoi using Stack/Recursion
+// ============================================================
+void hanoiP4(int n, char src, char dest, char aux) {
+    if (n == 1) {
+        cout << "Move disk 1 from " << src << " to " << dest << "\n";
+        return;
+    }
+
+    hanoiP4(n - 1, src, aux, dest);
+    cout << "Move disk " << n << " from " << src << " to " << dest << "\n";
+    hanoiP4(n - 1, aux, dest, src);
+}
+
+void practical4() {
+    int n;
+
+    cout << "Enter number of disks: ";
+    cin >> n;
+
+    cout << "\nSteps to solve Tower of Hanoi with "
+         << n << " disks:\n";
+
+    hanoiP4(n, 'A', 'C', 'B');
+
+    cout << "\nTotal moves: " << ((1LL << n) - 1) << "\n";
+}
+
+
+// ============================================================
+// PRACTICAL NO. 5: Queue and Its Operations
+// ============================================================
+class QueueP5 {
+    int arr[MAX];
+    int front, rear;
+
+public:
+    QueueP5() {
+        front = -1;
+        rear = -1;
+    }
+
+    bool isEmpty() {
+        return front == -1;
+    }
+
+    bool isFull() {
+        return rear == MAX - 1;
+    }
+
+    void enqueue(int val) {
+        if (isFull()) {
+            cout << "Queue is Full!\n";
+            return;
+        }
+
+        if (isEmpty())
+            front = 0;
+
+        arr[++rear] = val;
+        cout << val << " enqueued.\n";
+    }
+
+    void dequeue() {
+        if (isEmpty()) {
+            cout << "Queue is Empty!\n";
+            return;
+        }
+
+        cout << arr[front] << " dequeued.\n";
+
+        if (front == rear)
+            front = rear = -1;
+        else
+            front++;
+    }
+
+    void traverse() {
+        if (isEmpty()) {
+            cout << "Queue is empty.\n";
+            return;
+        }
+
+        cout << "Queue (front to rear): ";
+        for (int i = front; i <= rear; i++)
+            cout << arr[i] << " ";
+        cout << "\n";
+    }
+
+    void search(int val) {
+        if (isEmpty()) {
+            cout << "Queue is empty.\n";
+            return;
+        }
+
+        for (int i = front; i <= rear; i++) {
+            if (arr[i] == val) {
+                cout << val << " found at position "
+                     << (i - front + 1) << ".\n";
+                return;
+            }
+        }
+
+        cout << val << " not found.\n";
+    }
+};
+
+void practical5() {
+    QueueP5 q;
+    int choice, val;
+
+    do {
+        cout << "\n--- Queue Menu ---\n";
+        cout << "1.Enqueue 2.Dequeue 3.Traverse 4.Search 0.Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Value: ";
+                cin >> val;
+                q.enqueue(val);
+                break;
+            case 2:
+                q.dequeue();
+                break;
+            case 3:
+                q.traverse();
+                break;
+            case 4:
+                cout << "Search: ";
+                cin >> val;
+                q.search(val);
+                break;
+        }
+    } while (choice != 0);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 6: Singly Linked List
+// ============================================================
+struct NodeP6 {
+    int data;
+    NodeP6* next;
+
+    NodeP6(int d) : data(d), next(nullptr) {}
+};
+
+class SLLP6 {
+    NodeP6* head;
+
+public:
+    SLLP6() : head(nullptr) {}
+
+    void insertAtBegin(int val) {
+        NodeP6* n = new NodeP6(val);
+        n->next = head;
+        head = n;
+
+        cout << val << " inserted at beginning.\n";
+    }
+
+    void insertAtEnd(int val) {
+        NodeP6* n = new NodeP6(val);
+
+        if (!head) {
+            head = n;
+        }
+        else {
+            NodeP6* temp = head;
+            while (temp->next)
+                temp = temp->next;
+
+            temp->next = n;
+        }
+
+        cout << val << " inserted at end.\n";
+    }
+
+    void deleteNode(int val) {
+        if (!head) {
+            cout << "List empty.\n";
+            return;
+        }
+
+        if (head->data == val) {
+            NodeP6* temp = head;
+            head = head->next;
+            delete temp;
+
+            cout << val << " deleted.\n";
+            return;
+        }
+
+        NodeP6* prev = head;
+        NodeP6* curr = head->next;
+
+        while (curr && curr->data != val) {
+            prev = curr;
+            curr = curr->next;
+        }
+
+        if (!curr) {
+            cout << val << " not found.\n";
+            return;
+        }
+
+        prev->next = curr->next;
+        delete curr;
+
+        cout << val << " deleted.\n";
+    }
+
+    void traverse() {
+        NodeP6* temp = head;
+
+        cout << "List: ";
+        while (temp) {
+            cout << temp->data << " -> ";
+            temp = temp->next;
+        }
+        cout << "NULL\n";
+    }
+
+    void search(int val) {
+        NodeP6* temp = head;
+        int pos = 1;
+
+        while (temp) {
+            if (temp->data == val) {
+                cout << val << " found at position "
+                     << pos << "\n";
+                return;
+            }
+
+            temp = temp->next;
+            pos++;
+        }
+
+        cout << val << " not found.\n";
+    }
+
+    void reverse() {
+        NodeP6* prev = nullptr;
+        NodeP6* curr = head;
+        NodeP6* next = nullptr;
+
+        while (curr) {
+            next = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = next;
+        }
+
+        head = prev;
+        cout << "List reversed.\n";
+    }
+};
+
+void practical6() {
+    SLLP6 list;
+    int ch, val;
+
+    do {
+        cout << "\n1.InsertBegin 2.InsertEnd 3.Delete "
+             << "4.Traverse 5.Search 6.Reverse 0.Exit\n";
+        cout << "Choice: ";
+        cin >> ch;
+
+        switch (ch) {
+            case 1:
+                cout << "Val: ";
+                cin >> val;
+                list.insertAtBegin(val);
+                break;
+            case 2:
+                cout << "Val: ";
+                cin >> val;
+                list.insertAtEnd(val);
+                break;
+            case 3:
+                cout << "Val: ";
+                cin >> val;
+                list.deleteNode(val);
+                break;
+            case 4:
+                list.traverse();
+                break;
+            case 5:
+                cout << "Search: ";
+                cin >> val;
+                list.search(val);
+                break;
+            case 6:
+                list.reverse();
+                break;
+        }
+    } while (ch != 0);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 7: Doubly Linked List
+// ============================================================
+struct NodeP7 {
+    int data;
+    NodeP7* prev;
+    NodeP7* next;
+
+    NodeP7(int d) : data(d), prev(nullptr), next(nullptr) {}
+};
+
+class DLLP7 {
+    NodeP7* head;
+
+public:
+    DLLP7() : head(nullptr) {}
+
+    void insertAtBegin(int val) {
+        NodeP7* n = new NodeP7(val);
+
+        if (head) {
+            n->next = head;
+            head->prev = n;
+        }
+
+        head = n;
+    }
+
+    void insertAtEnd(int val) {
+        NodeP7* n = new NodeP7(val);
+
+        if (!head) {
+            head = n;
+            return;
+        }
+
+        NodeP7* temp = head;
+
+        while (temp->next)
+            temp = temp->next;
+
+        temp->next = n;
+        n->prev = temp;
+    }
+
+    void deleteNode(int val) {
+        NodeP7* temp = head;
+
+        while (temp && temp->data != val)
+            temp = temp->next;
+
+        if (!temp) {
+            cout << val << " not found.\n";
+            return;
+        }
+
+        if (temp->prev)
+            temp->prev->next = temp->next;
+        else
+            head = temp->next;
+
+        if (temp->next)
+            temp->next->prev = temp->prev;
+
+        delete temp;
+
+        cout << val << " deleted.\n";
+    }
+
+    void traverse() {
+        NodeP7* temp = head;
+
+        cout << "Forward: NULL <-> ";
+
+        while (temp) {
+            cout << temp->data << " <-> ";
+            temp = temp->next;
+        }
+
+        cout << "NULL\n";
+    }
+
+    void search(int val) {
+        NodeP7* temp = head;
+        int pos = 1;
+
+        while (temp) {
+            if (temp->data == val) {
+                cout << val << " at position " << pos << "\n";
+                return;
+            }
+
+            temp = temp->next;
+            pos++;
+        }
+
+        cout << val << " not found.\n";
+    }
+
+    void reverse() {
+        NodeP7* curr = head;
+        NodeP7* temp = nullptr;
+
+        while (curr) {
+            temp = curr->prev;
+            curr->prev = curr->next;
+            curr->next = temp;
+            curr = curr->prev;
+        }
+
+        if (temp)
+            head = temp->prev;
+
+        cout << "List reversed.\n";
+    }
+};
+
+void practical7() {
+    DLLP7 list;
+    int ch, val;
+
+    do {
+        cout << "\n1.InsertBegin 2.InsertEnd 3.Delete "
+             << "4.Traverse 5.Search 6.Reverse 0.Exit\n";
+        cout << "Choice: ";
+        cin >> ch;
+
+        switch (ch) {
+            case 1:
+                cout << "Val: ";
+                cin >> val;
+                list.insertAtBegin(val);
+                break;
+            case 2:
+                cout << "Val: ";
+                cin >> val;
+                list.insertAtEnd(val);
+                break;
+            case 3:
+                cout << "Val: ";
+                cin >> val;
+                list.deleteNode(val);
+                break;
+            case 4:
+                list.traverse();
+                break;
+            case 5:
+                cout << "Search: ";
+                cin >> val;
+                list.search(val);
+                break;
+            case 6:
+                list.reverse();
+                break;
+        }
+    } while (ch != 0);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 8: Circular Linked List
+// ============================================================
+struct NodeP8 {
+    int data;
+    NodeP8* next;
+
+    NodeP8(int d) : data(d), next(nullptr) {}
+};
+
+class CLLP8 {
+    NodeP8* tail;
+
+public:
+    CLLP8() : tail(nullptr) {}
+
+    void insertAtBegin(int val) {
+        NodeP8* n = new NodeP8(val);
+
+        if (!tail) {
+            tail = n;
+            n->next = n;
+        }
+        else {
+            n->next = tail->next;
+            tail->next = n;
+        }
+
+        cout << val << " inserted at beginning.\n";
+    }
+
+    void insertAtEnd(int val) {
+        NodeP8* n = new NodeP8(val);
+
+        if (!tail) {
+            tail = n;
+            n->next = n;
+        }
+        else {
+            n->next = tail->next;
+            tail->next = n;
+            tail = n;
+        }
+
+        cout << val << " inserted at end.\n";
+    }
+
+    void deleteNode(int val) {
+        if (!tail) {
+            cout << "List empty.\n";
+            return;
+        }
+
+        NodeP8* curr = tail->next;
+        NodeP8* prev = tail;
+
+        do {
+            if (curr->data == val) {
+                if (curr == tail && curr == tail->next) {
+                    tail = nullptr;
+                }
+                else {
+                    prev->next = curr->next;
+
+                    if (curr == tail)
+                        tail = prev;
+                }
+
+                delete curr;
+                cout << val << " deleted.\n";
+                return;
+            }
+
+            prev = curr;
+            curr = curr->next;
+
+        } while (curr != tail->next);
+
+        cout << val << " not found.\n";
+    }
+
+    void traverse() {
+        if (!tail) {
+            cout << "List empty.\n";
+            return;
+        }
+
+        NodeP8* curr = tail->next;
+
+        cout << "CLL: ";
+
+        do {
+            cout << curr->data << " -> ";
+            curr = curr->next;
+        } while (curr != tail->next);
+
+        cout << "(back to head)\n";
+    }
+
+    void search(int val) {
+        if (!tail) {
+            cout << "List empty.\n";
+            return;
+        }
+
+        NodeP8* curr = tail->next;
+        int pos = 1;
+
+        do {
+            if (curr->data == val) {
+                cout << val << " found at position "
+                     << pos << "\n";
+                return;
+            }
+
+            curr = curr->next;
+            pos++;
+
+        } while (curr != tail->next);
+
+        cout << val << " not found.\n";
+    }
+};
+
+void practical8() {
+    CLLP8 list;
+    int ch, val;
+
+    do {
+        cout << "\n1.InsertBegin 2.InsertEnd 3.Delete "
+             << "4.Traverse 5.Search 0.Exit\n";
+        cout << "Choice: ";
+        cin >> ch;
+
+        switch (ch) {
+            case 1:
+                cout << "Val: ";
+                cin >> val;
+                list.insertAtBegin(val);
+                break;
+            case 2:
+                cout << "Val: ";
+                cin >> val;
+                list.insertAtEnd(val);
+                break;
+            case 3:
+                cout << "Val: ";
+                cin >> val;
+                list.deleteNode(val);
+                break;
+            case 4:
+                list.traverse();
+                break;
+            case 5:
+                cout << "Search: ";
+                cin >> val;
+                list.search(val);
+                break;
+        }
+    } while (ch != 0);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 9: Linear Search, Binary Search,
+//                 Interpolation Search
+// ============================================================
+int linearSearchP9(const vector<int>& arr, int key) {
+    for (int i = 0; i < static_cast<int>(arr.size()); i++) {
+        if (arr[i] == key)
+            return i;
+    }
+
+    return -1;
+}
+
+int binarySearchP9(const vector<int>& arr, int key) {
+    int low = 0;
+    int high = static_cast<int>(arr.size()) - 1;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+
+        if (arr[mid] == key)
+            return mid;
+        else if (arr[mid] < key)
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+
+    return -1;
+}
+
+int interpolationSearchP9(const vector<int>& arr, int key) {
+    int low = 0;
+    int high = static_cast<int>(arr.size()) - 1;
+
+    while (low <= high &&
+           key >= arr[low] &&
+           key <= arr[high]) {
+
+        if (low == high) {
+            if (arr[low] == key)
+                return low;
+            return -1;
+        }
+
+        if (arr[high] == arr[low])
+            return (arr[low] == key) ? low : -1;
+
+        int pos = low +
+                  static_cast<int>(
+                      (static_cast<double>(high - low) /
+                       (arr[high] - arr[low])) *
+                      (key - arr[low])
+                  );
+
+        if (arr[pos] == key)
+            return pos;
+
+        if (arr[pos] < key)
+            low = pos + 1;
+        else
+            high = pos - 1;
+    }
+
+    return -1;
+}
+
+void printResultP9(string name, int idx, int key) {
+    if (idx != -1)
+        cout << name << ": " << key
+             << " found at index " << idx << "\n";
+    else
+        cout << name << ": " << key
+             << " not found.\n";
+}
+
+void practical9() {
+    int n;
+
+    cout << "Enter number of elements: ";
+    cin >> n;
+
+    vector<int> arr(n);
+
+    cout << "Enter " << n << " elements: ";
+    for (int i = 0; i < n; i++)
+        cin >> arr[i];
+
+    sort(arr.begin(), arr.end());
+
+    cout << "Sorted array: ";
+    for (int i = 0; i < n; i++)
+        cout << arr[i] << " ";
+    cout << "\n";
+
+    int key;
+
+    cout << "Enter key to search: ";
+    cin >> key;
+
+    printResultP9(
+        "Linear Search",
+        linearSearchP9(arr, key),
+        key
+    );
+
+    printResultP9(
+        "Binary Search",
+        binarySearchP9(arr, key),
+        key
+    );
+
+    printResultP9(
+        "Interpolation Search",
+        interpolationSearchP9(arr, key),
+        key
+    );
+}
+
+
+// ============================================================
+// PRACTICAL NO. 10: Bubble Sort, Selection Sort,
+//                  Insertion Sort, Quick Sort, Merge Sort
+// ============================================================
+void printArrP10(const vector<int>& a) {
+    for (int x : a)
+        cout << x << " ";
+    cout << "\n";
+}
+
+void bubbleSortP10(vector<int>& a) {
+    int n = static_cast<int>(a.size());
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - 1 - i; j++) {
+            if (a[j] > a[j + 1])
+                swap(a[j], a[j + 1]);
+        }
+    }
+}
+
+void selectionSortP10(vector<int>& a) {
+    int n = static_cast<int>(a.size());
+
+    for (int i = 0; i < n - 1; i++) {
+        int minIdx = i;
+
+        for (int j = i + 1; j < n; j++) {
+            if (a[j] < a[minIdx])
+                minIdx = j;
+        }
+
+        swap(a[i], a[minIdx]);
+    }
+}
+
+void insertionSortP10(vector<int>& a) {
+    int n = static_cast<int>(a.size());
+
+    for (int i = 1; i < n; i++) {
+        int key = a[i];
+        int j = i - 1;
+
+        while (j >= 0 && a[j] > key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+
+        a[j + 1] = key;
+    }
+}
+
+int partitionP10(vector<int>& a, int low, int high) {
+    int pivot = a[high];
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (a[j] <= pivot)
+            swap(a[++i], a[j]);
+    }
+
+    swap(a[i + 1], a[high]);
+
+    return i + 1;
+}
+
+void quickSortP10(vector<int>& a, int low, int high) {
+    if (low < high) {
+        int pi = partitionP10(a, low, high);
+
+        quickSortP10(a, low, pi - 1);
+        quickSortP10(a, pi + 1, high);
+    }
+}
+
+void mergeP10(vector<int>& a, int l, int m, int r) {
+    vector<int> L(
+        a.begin() + l,
+        a.begin() + m + 1
+    );
+
+    vector<int> R(
+        a.begin() + m + 1,
+        a.begin() + r + 1
+    );
+
+    int i = 0;
+    int j = 0;
+    int k = l;
+
+    while (i < static_cast<int>(L.size()) &&
+           j < static_cast<int>(R.size())) {
+
+        if (L[i] <= R[j])
+            a[k++] = L[i++];
+        else
+            a[k++] = R[j++];
+    }
+
+    while (i < static_cast<int>(L.size()))
+        a[k++] = L[i++];
+
+    while (j < static_cast<int>(R.size()))
+        a[k++] = R[j++];
+}
+
+void mergeSortP10(vector<int>& a, int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
+
+        mergeSortP10(a, l, m);
+        mergeSortP10(a, m + 1, r);
+
+        mergeP10(a, l, m, r);
+    }
+}
+
+void practical10() {
+    int n;
+
+    cout << "Enter number of elements: ";
+    cin >> n;
+
+    vector<int> orig(n);
+
+    cout << "Enter elements: ";
+    for (int i = 0; i < n; i++)
+        cin >> orig[i];
+
+    vector<int> a;
+
+    a = orig;
+    bubbleSortP10(a);
+    cout << "Bubble Sort: ";
+    printArrP10(a);
+
+    a = orig;
+    selectionSortP10(a);
+    cout << "Selection Sort: ";
+    printArrP10(a);
+
+    a = orig;
+    insertionSortP10(a);
+    cout << "Insertion Sort: ";
+    printArrP10(a);
+
+    a = orig;
+    quickSortP10(a, 0, n - 1);
+    cout << "Quick Sort: ";
+    printArrP10(a);
+
+    a = orig;
+    mergeSortP10(a, 0, n - 1);
+    cout << "Merge Sort: ";
+    printArrP10(a);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 11: Binary Search Tree - Creation,
+//                   Insertion, Deletion
+// ============================================================
+struct NodeP11 {
+    int data;
+    NodeP11* left;
+    NodeP11* right;
+
+    NodeP11(int d) : data(d), left(nullptr), right(nullptr) {}
+};
+
+NodeP11* insertP11(NodeP11* root, int val) {
+    if (!root)
+        return new NodeP11(val);
+
+    if (val < root->data)
+        root->left = insertP11(root->left, val);
+    else if (val > root->data)
+        root->right = insertP11(root->right, val);
+
+    return root;
+}
+
+NodeP11* minNodeP11(NodeP11* root) {
+    while (root->left)
+        root = root->left;
+
+    return root;
+}
+
+NodeP11* deleteNodeP11(NodeP11* root, int val) {
+    if (!root)
+        return root;
+
+    if (val < root->data) {
+        root->left = deleteNodeP11(root->left, val);
+    }
+    else if (val > root->data) {
+        root->right = deleteNodeP11(root->right, val);
+    }
+    else {
+        if (!root->left) {
+            NodeP11* t = root->right;
+            delete root;
+            return t;
+        }
+
+        if (!root->right) {
+            NodeP11* t = root->left;
+            delete root;
+            return t;
+        }
+
+        NodeP11* succ = minNodeP11(root->right);
+        root->data = succ->data;
+        root->right =
+            deleteNodeP11(root->right, succ->data);
+    }
+
+    return root;
+}
+
+void inorderP11(NodeP11* root) {
+    if (!root)
+        return;
+
+    inorderP11(root->left);
+    cout << root->data << " ";
+    inorderP11(root->right);
+}
+
+void practical11() {
+    NodeP11* root = nullptr;
+    int ch, val;
+
+    do {
+        cout << "\n1.Insert 2.Delete 3.Inorder 0.Exit\nChoice: ";
+        cin >> ch;
+
+        switch (ch) {
+            case 1:
+                cout << "Val: ";
+                cin >> val;
+                root = insertP11(root, val);
+                break;
+
+            case 2:
+                cout << "Val: ";
+                cin >> val;
+                root = deleteNodeP11(root, val);
+                break;
+
+            case 3:
+                cout << "Inorder: ";
+                inorderP11(root);
+                cout << "\n";
+                break;
+        }
+    } while (ch != 0);
+}
+
+
+// ============================================================
+// PRACTICAL NO. 12: BST Traversals - Preorder, Inorder,
+//                   Postorder
+// ============================================================
+struct NodeP12 {
+    int data;
+    NodeP12* left;
+    NodeP12* right;
+
+    NodeP12(int d) : data(d), left(nullptr), right(nullptr) {}
+};
+
+NodeP12* insertP12(NodeP12* root, int val) {
+    if (!root)
+        return new NodeP12(val);
+
+    if (val < root->data)
+        root->left = insertP12(root->left, val);
+    else
+        root->right = insertP12(root->right, val);
+
+    return root;
+}
+
+void preorderP12(NodeP12* root) {
+    if (!root)
+        return;
+
+    cout << root->data << " ";
+    preorderP12(root->left);
+    preorderP12(root->right);
+}
+
+void inorderP12(NodeP12* root) {
+    if (!root)
+        return;
+
+    inorderP12(root->left);
+    cout << root->data << " ";
+    inorderP12(root->right);
+}
+
+void postorderP12(NodeP12* root) {
+    if (!root)
+        return;
+
+    postorderP12(root->left);
+    postorderP12(root->right);
+    cout << root->data << " ";
+}
+
+void practical12() {
+    NodeP12* root = nullptr;
+    int n, val;
+
+    cout << "Enter number of nodes: ";
+    cin >> n;
+
+    cout << "Enter " << n << " values: ";
+
+    for (int i = 0; i < n; i++) {
+        cin >> val;
+        root = insertP12(root, val);
+    }
+
+    cout << "Preorder (Root-L-R): ";
+    preorderP12(root);
+    cout << "\n";
+
+    cout << "Inorder (L-Root-R): ";
+    inorderP12(root);
+    cout << "\n";
+
+    cout << "Postorder (L-R-Root): ";
+    postorderP12(root);
+    cout << "\n";
+}
+
+
+// ============================================================
+// PRACTICAL NO. 13: Graph Representation - Adjacency List,
+//                   Adjacency Matrix, BFS and DFS
+// ============================================================
+class GraphP13 {
+    int V;
+    vector<vector<int>> adjList;
+    vector<vector<int>> adjMatrix;
+
+public:
+    GraphP13(int v) : V(v) {
+        adjList.resize(V);
+        adjMatrix.assign(V, vector<int>(V, 0));
+    }
+
+    void addEdge(int u, int v) {
+        adjList[u].push_back(v);
+        adjList[v].push_back(u);
+
+        adjMatrix[u][v] = 1;
+        adjMatrix[v][u] = 1;
+    }
+
+    void printAdjList() {
+        cout << "\nAdjacency List:\n";
+
+        for (int i = 0; i < V; i++) {
+            cout << i << " -> ";
+
+            for (int x : adjList[i])
+                cout << x << " ";
+
+            cout << "\n";
+        }
+    }
+
+    void printAdjMatrix() {
+        cout << "\nAdjacency Matrix:\n ";
+
+        for (int i = 0; i < V; i++)
+            cout << i << " ";
+
+        cout << "\n";
+
+        for (int i = 0; i < V; i++) {
+            cout << i << " ";
+
+            for (int j = 0; j < V; j++)
+                cout << adjMatrix[i][j] << " ";
+
+            cout << "\n";
+        }
+    }
+
+    void BFS(int start) {
+        vector<bool> visited(V, false);
+        queue<int> q;
+
+        visited[start] = true;
+        q.push(start);
+
+        cout << "\nBFS from " << start << ": ";
+
+        while (!q.empty()) {
+            int node = q.front();
+            q.pop();
+
+            cout << node << " ";
+
+            for (int nbr : adjList[node]) {
+                if (!visited[nbr]) {
+                    visited[nbr] = true;
+                    q.push(nbr);
+                }
+            }
+        }
+
+        cout << "\n";
+    }
+
+    void DFSHelper(int node, vector<bool>& visited) {
+        visited[node] = true;
+        cout << node << " ";
+
+        for (int nbr : adjList[node]) {
+            if (!visited[nbr])
+                DFSHelper(nbr, visited);
+        }
+    }
+
+    void DFS(int start) {
+        vector<bool> visited(V, false);
+
+        cout << "DFS from " << start << ": ";
+        DFSHelper(start, visited);
+        cout << "\n";
+    }
+};
+
+void practical13() {
+    int V, E;
+
+    cout << "Enter number of vertices: ";
+    cin >> V;
+
+    cout << "Enter number of edges: ";
+    cin >> E;
+
+    GraphP13 g(V);
+
+    cout << "Enter " << E << " edges (u v):\n";
+
+    for (int i = 0; i < E; i++) {
+        int u, v;
+        cin >> u >> v;
+        g.addEdge(u, v);
+    }
+
+    g.printAdjList();
+    g.printAdjMatrix();
+
+    int start;
+
+    cout << "\nEnter start vertex for traversal: ";
+    cin >> start;
+
+    g.BFS(start);
+    g.DFS(start);
+}
+
+
+// ============================================================
+// MAIN MENU - ALL 13 PRACTICALS
+// ============================================================
+int main() {
+    int choice;
+
+    do {
+        cout << "\n==================================================\n";
+        cout << "       DSA LAB MANUAL - C++ - SEMESTER 3\n";
+        cout << "==================================================\n";
+        cout << "1.  Stack and Its Operations\n";
+        cout << "2.  Infix to Postfix Expression Conversion\n";
+        cout << "3.  Postfix Expression Evaluation\n";
+        cout << "4.  Towers of Hanoi using Stack/Recursion\n";
+        cout << "5.  Queue and Its Operations\n";
+        cout << "6.  Singly Linked List\n";
+        cout << "7.  Doubly Linked List\n";
+        cout << "8.  Circular Linked List\n";
+        cout << "9.  Linear, Binary and Interpolation Search\n";
+        cout << "10. Bubble, Selection, Insertion, Quick and Merge Sort\n";
+        cout << "11. Binary Search Tree - Creation, Insertion, Deletion\n";
+        cout << "12. BST Traversals - Preorder, Inorder, Postorder\n";
+        cout << "13. Graph - Adjacency List/Matrix, BFS and DFS\n";
+        cout << "0.  Exit\n";
+        cout << "==================================================\n";
+        cout << "Enter practical number: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                practical1();
+                break;
+            case 2:
+                practical2();
+                break;
+            case 3:
+                practical3();
+                break;
+            case 4:
+                practical4();
+                break;
+            case 5:
+                practical5();
+                break;
+            case 6:
+                practical6();
+                break;
+            case 7:
+                practical7();
+                break;
+            case 8:
+                practical8();
+                break;
+            case 9:
+                practical9();
+                break;
+            case 10:
+                practical10();
+                break;
+            case 11:
+                practical11();
+                break;
+            case 12:
+                practical12();
+                break;
+            case 13:
+                practical13();
+                break;
+            case 0:
+                cout << "Exiting...\n";
+                break;
+            default:
+                cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}
